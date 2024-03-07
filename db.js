@@ -30,7 +30,7 @@ const pool = new Pool({
   password: 'root',
   host: 'localhost',
   port: 5432,
-  database: 'hh',
+  database: 'hh', 
 });
 
 export default pool;
