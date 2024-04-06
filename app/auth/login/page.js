@@ -1,7 +1,7 @@
  'use client'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import backgroundImage from 'public/Bg.jpg';
+// import backgroundImage from 'public/Bg.jpg';
 
 const Login = () => {
   const router = useRouter();
