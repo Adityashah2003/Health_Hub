@@ -1,6 +1,7 @@
 import Feed from "@/components/Feed";
 
 export default function Home() {
+  
   return (
     <main className="h-screen" >
       <section className="w-full flex-center flex-col py-16 text-gray-800">
