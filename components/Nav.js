@@ -1,11 +1,10 @@
 'use client';
 import Link from 'next/link';
-import Image from 'next/image';
-import {signIn, signOut, useSession, getProviders} from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation';
 
 
 const CartItem = ({ product, removeFromCart }) => (
@@ -226,10 +225,36 @@ const Cart = ({ setOpen, open }) => {
 
 
 const Nav = () => {
-  const {data: session} = useSession();
-  const [providers, setProviders] = useState(null);
-  const [toggleDropdown, settoggleDropdown] = useState(false);
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  const [session, setSession] = useState(null)
+
+  useEffect(() => {
+    const fetchData = async()=>{
+      const res = await fetch('/api/session');
+      if(res.ok){
+        const user = await res.json();
+        setSession(user);
+      }
+    }
+    fetchData();
+  }, [router]);
+
+  console.log(session);
+  
+
+  const handleLogout = async()=>{
+    try {
+      const response = await fetch('/api/auth/logout')
+      if(response.ok){
+        console.log("Logged Out successfully")
+        router.push('/auth/login')
+      }
+    } catch (error) {
+      console.log("Internal server error")
+    }
+  }
   
   return (
     <nav className="w-full bg-gray-800 text-white p-4">
@@ -241,12 +266,24 @@ const Nav = () => {
             <Link href="/user" className="hover:text-gray-300 border px-3 py-1 rounded-full">
               <p>User Profile</p>
             </Link>
-            <Link href="/auth/login" className="hover:text-gray-300 ">
-              <p>Sign in</p>
-            </Link>
-            <Link href="/auth/register" className="hover:text-gray-300">
-              <p>Register</p>
-            </Link>
+            {session===null ? 
+              (
+                <>
+                  <Link href="/auth/login" className="hover:text-gray-300 ">
+                    <p>Sign in</p>
+                  </Link>
+                  <Link href="/auth/register" className="hover:text-gray-300">
+                    <p>Register</p>
+                  </Link>
+                </>
+              ): (
+                <>
+                  <button onClick={handleLogout} className="hover:text-gray-300">
+                    <p>Logout</p>
+                  </button>
+                </>
+              )
+            }
             <button onClick={() => setOpen((prev) => !prev)} className="border px-3 py-1 rounded-full hover:text-gray-300">
               Cart
             </button>

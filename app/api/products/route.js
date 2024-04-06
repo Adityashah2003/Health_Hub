@@ -1,3 +1,4 @@
+import { authenticateToken } from '@/app/actions';
 import pool from '../../../db';
 import { NextResponse } from 'next/server';
 

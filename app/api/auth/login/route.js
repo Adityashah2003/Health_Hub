@@ -1,5 +1,7 @@
 import pool from '../../../../db';
 import { NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
+import { createToken } from '@/app/actions';
 
 export async function POST(req, res) {
   const body = await req.json();
@@ -25,6 +27,15 @@ export async function POST(req, res) {
       );
 
       if (result.rows.length > 0) {
+        const result = await client.query(
+          `SELECT CUST_ID FROM ${table} WHERE username = $1`,
+          [username]
+        );
+  
+        const id =  result.rows[0].cust_id
+        const token = jwt.sign({ cust_id: id }, process.env.JWT_SECRET);
+        createToken(token)
+
         // Authentication successful
         const custId = result.rows[0].cust_id;
 
@@ -42,18 +53,19 @@ export async function POST(req, res) {
         );
 
         console.log('Logged in successfully');
-        return NextResponse.json({ message: 'Login Successful', loginId: newLoginId }, { status: 200 });
+        client.release();
+        return NextResponse.json({ message: 'Login Successful'}, { status: 200 });
       } else {
         // Authentication failed
         console.log('Login failed');
+        client.release();
         return NextResponse.json({ error: 'Login Failed' }, { status: 401 });
       }
     } else {
       // Role not recognized
+      client.release();
       return NextResponse.json({ error: 'Role not recognized' }, { status: 401 });
     }
-
-    client.release();
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

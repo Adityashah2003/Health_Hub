@@ -1,12 +1,34 @@
 'use client'
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 const User = () => {
-  //const [userInfo, setUserInfo] = useState({});
-  //const [orderHistory, setOrderHistory] = useState({});
-  //const [allReviews, setallReviews] = useState({});
   const [allData, setAllData] = useState({});
+  const router = useRouter();
+  const [session, setSession] = useState()
+
+  useEffect(() => {
+    const fetchData = async()=>{
+      const res = await fetch('/api/session');
+      if(res.ok){
+        const user = await res.json();
+        setSession(user);
+      }
+      else{
+        router.push('/auth/login');
+      }
+    }
+    fetchData();
+  }, [router]);
+
+  console.log(session);
+
+  if(!session){
+    return <div className="p-24 text-center">Loading...</div>;
+  }
+  
 
   useEffect(() => {
     async function fetchUserData(){
@@ -15,6 +37,7 @@ const User = () => {
         if(response.ok){
           const data = await response.json();
           setAllData(data);
+          setLoggedIn(true);
         }
         else{
           console.error('Failed to fetch user data.');
@@ -25,17 +48,12 @@ const User = () => {
     }
     fetchUserData();
   }, [])
-  
+
 
   const userInfo = allData.customer_info;
   const orderHistory = allData.order_history;
   const allReviews = allData.user_reviews;
 
-  //console.log("all data: ",allData);
-  //console.log("customer data: ",userInfo);
-  //console.log("order history data: ",orderHistory);
-  //console.log("user review data: ", allReviews);
-  // style={{ backgroundImage: `url('/mainBg.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
   return (
     <div className="min-h-screen flex items-center justify-center m-16" >
     <div className="p-8 rounded-lg shadow-lg w-full max-w-screen-xl bg-gray-100" style={{ backgroundColor: 'rgba(200, 200, 200, 0.9)', borderRadius: '10px' }}>

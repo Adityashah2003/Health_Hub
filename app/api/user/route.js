@@ -1,15 +1,13 @@
 import pool from '../../../db';
 import { NextResponse } from 'next/server';
+import { getToken } from '@/app/actions';
 
 export async function GET(req, res){
   try {
     const client = await pool.connect();
-
-    //fetching latest logged in user
-    const custIdQuery = 'SELECT Cust_id FROM Login ORDER BY Login_id DESC LIMIT 1';
-    const custIdResult = await client.query(custIdQuery);
-    const cust_id = custIdResult.rows[0].cust_id;
     
+    const cust_id = await getToken(); 
+
     const customer_result = await client.query(`SELECT * FROM Customer WHERE Cust_id = ${cust_id}`);
     const customer_info = customer_result.rows[0];
 
@@ -17,7 +15,7 @@ export async function GET(req, res){
         `SELECT P.P_id, P.P_name, P.Description, P.Price, P.image1
         FROM Product P, PlacesOrder PO
         WHERE PO.Cust_id =
-         ${cust_id} AND P.P_id = PO.P_id`
+        ${cust_id} AND P.P_id = PO.P_id`
     );
 
     const order_history = all_order_history.rows.map((row) => ({
@@ -27,7 +25,6 @@ export async function GET(req, res){
         image1: row.image1,
         price: row.price
     }))
-
 
     const all_user_reviews = await client.query(`
         SELECT R.Review_id, R.Description, R.Rating, H.P_id
