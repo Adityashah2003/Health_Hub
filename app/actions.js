@@ -7,7 +7,7 @@ import { NextResponse } from 'next/server'
 export async function createToken(data) {
     const cookie = cookies().get('token');
     if(cookie){
-        console.log('cookie exits:', cookie);
+        // console.log('cookie exits:', cookie);
         return NextResponse.next();
     }
     const res = cookies().set('token', data, { secure: true })

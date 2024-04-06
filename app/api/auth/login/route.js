@@ -52,7 +52,7 @@ export async function POST(req, res) {
           [newLoginId, custId, roleType]
         );
 
-        console.log('Logged in successfully');
+        // console.log('Logged in successfully');
         client.release();
         return NextResponse.json({ message: 'Login Successful'}, { status: 200 });
       } else {

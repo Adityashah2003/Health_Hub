@@ -10,10 +10,11 @@ const User = () => {
   const [session, setSession] = useState()
 
   useEffect(() => {
-    const fetchData = async()=>{
-      const res = await fetch('/api/session');
+    const fetchData = async ()=>{
+      const res = await fetch('/api/auth/session');
       if(res.ok){
         const user = await res.json();
+        console.log("User: ", user)
         setSession(user);
       }
       else{
@@ -21,14 +22,7 @@ const User = () => {
       }
     }
     fetchData();
-  }, [router]);
-
-  console.log(session);
-
-  if(!session){
-    return <div className="p-24 text-center">Loading...</div>;
-  }
-  
+  }, []);
 
   useEffect(() => {
     async function fetchUserData(){
@@ -37,7 +31,6 @@ const User = () => {
         if(response.ok){
           const data = await response.json();
           setAllData(data);
-          setLoggedIn(true);
         }
         else{
           console.error('Failed to fetch user data.');
@@ -48,8 +41,11 @@ const User = () => {
     }
     fetchUserData();
   }, [])
-
-
+  
+  if(!session){
+    return <div className="p-24 text-center">Loading...</div>;
+  }
+  
   const userInfo = allData.customer_info;
   const orderHistory = allData.order_history;
   const allReviews = allData.user_reviews;

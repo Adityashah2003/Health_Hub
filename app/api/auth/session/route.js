@@ -7,7 +7,7 @@ export async function GET(){
     const token = cookieStore.get('token');
 
     if(!token){
-        return NextResponse.json({err: "Session does not exists"}, {status: 404});
+        return NextResponse.json({err: "Session does not exists"}, {status: 401});
     }
 
     const { value } = token;
@@ -15,8 +15,7 @@ export async function GET(){
 
     try {
         const decoded = verify(value, secret)
-        console.log("Decoded session: ", decoded)
-        return NextResponse.json(decoded, {status: 200});
+        return NextResponse.json({data:decoded}, {status: 200});
     } catch (error) {
         return NextResponse.json({err: "Internal Server Error"}, {status: 500});
     }

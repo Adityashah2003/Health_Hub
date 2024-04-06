@@ -232,7 +232,7 @@ const Nav = () => {
 
   useEffect(() => {
     const fetchData = async()=>{
-      const res = await fetch('/api/session');
+      const res = await fetch('/api/auth/session');
       if(res.ok){
         const user = await res.json();
         setSession(user);
