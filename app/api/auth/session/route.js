@@ -15,7 +15,8 @@ export async function GET(){
 
     try {
         const decoded = verify(value, secret)
-        return NextResponse.json({data:decoded}, {status: 200});
+        const cust_id = decoded.cust_id
+        return NextResponse.json(cust_id, {status: 200});
     } catch (error) {
         return NextResponse.json({err: "Internal Server Error"}, {status: 500});
     }

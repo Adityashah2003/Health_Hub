@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
 import pool from '../../../db';
+import { getToken } from '@/app/actions';
 
 export async function GET(req, res){
     try {
       const client = await pool.connect();
 
       // Fetch the Cust_id from the last row of the Login table
-      const custIdQuery = 'SELECT Cust_id FROM Login ORDER BY Login_id DESC LIMIT 1';
-      const custIdResult = await client.query(custIdQuery);
-      const custId = custIdResult.rows[0].cust_id;
+      // const custIdQuery = 'SELECT Cust_id FROM Login ORDER BY Login_id DESC LIMIT 1';
+      // const custIdResult = await client.query(custIdQuery);
+      // const custId = custIdResult.rows[0].cust_id;
+
+      const custId = await getToken(); 
 
       // Use the fetched Cust_id in the query
       const query = `SELECT 
@@ -30,9 +33,9 @@ export async function GET(req, res){
         image1: row.image1,
         price: row.price
       }));
-      
-      return NextResponse.json(cartItems, {status:200});
       client.release();
+      return NextResponse.json(cartItems, {status:200});
+      
     } catch (error) {
       console.error(error);
       return NextResponse.json({ message: 'Internal server error' }, {status:500});

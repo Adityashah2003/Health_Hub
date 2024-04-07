@@ -1,15 +1,18 @@
 import { NextResponse } from 'next/server';
 import pool from '../../../db';
+import { getToken } from '@/app/actions';
 
 export async function GET(req, res){
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
-    const custIdQuery = 'SELECT Cust_id FROM Login ORDER BY Login_id DESC LIMIT 1';
+    // const custIdQuery = 'SELECT Cust_id FROM Login ORDER BY Login_id DESC LIMIT 1';
+
     if (client) {
-    const custIdResult = await client.query(custIdQuery);
-    const custId = custIdResult.rows[0].cust_id; // Check the case here
+    // const custIdResult = await client.query(custIdQuery);
+    // const custId = custIdResult.rows[0].cust_id; // Check the case here
+    const custId = await getToken(); 
 
     const maxOrderIdQuery = 'SELECT COALESCE(MAX(order_id), 0) + 1 AS next_order_id FROM OrderTable';
     const maxOrderIdResult = await client.query(maxOrderIdQuery);
@@ -52,11 +55,12 @@ export async function GET(req, res){
     const clearCartQuery = 'DELETE FROM AddsToCart WHERE Cust_id = $1';
     await client.query(clearCartQuery, [custId]);
     await client.query('COMMIT');
-
+    client.release()
     return NextResponse.json({ orderId: nextOrderId }, {status:200});
     }
   } catch (error) {
     await client.query('ROLLBACK');
+    client.release()
     console.error('Error in placing order:', error); // Log the specific error
     return NextResponse.json({ error: 'Database error' }, {status:500});
   } 

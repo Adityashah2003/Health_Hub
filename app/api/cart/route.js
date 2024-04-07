@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '../../../db';
+import { getToken } from '@/app/actions';
 
 export async function POST(req, res){
   const body = await req.json();
@@ -7,9 +8,11 @@ export async function POST(req, res){
   try {
       const client = await pool.connect();
 
-      const fetchCustIdQuery = 'SELECT Cust_id FROM Login ORDER BY Login_id DESC LIMIT 1';
-      const custIdResult = await client.query(fetchCustIdQuery);
-      const cust_id = custIdResult.rows[0].cust_id;
+      const cust_id = await getToken(); 
+
+      // const fetchCustIdQuery = 'SELECT Cust_id FROM Login ORDER BY Login_id DESC LIMIT 1';
+      // const custIdResult = await client.query(fetchCustIdQuery);
+      // const cust_id = custIdResult.rows[0].cust_id;
 
       // Check the quantity in the Product table
       const checkQuantityQuery = 'SELECT Quantity FROM Product WHERE P_id = $1';
@@ -18,6 +21,7 @@ export async function POST(req, res){
 
       // If the quantity is less than 1, return an error message
       if (quantity < 1) {
+          client.release();
           return NextResponse.json({ message: 'Product is out of stock.' }, {status: 409});
       }
 
@@ -29,7 +33,7 @@ export async function POST(req, res){
           await client.query(updateProductQuery, [product_id]);
           const updateQuery = 'UPDATE AddsToCart SET Quantity = Quantity + 1 WHERE P_id = $1 AND Cust_id = $2';
           await client.query(updateQuery, [product_id, cust_id]);
-       
+          client.release();
           return NextResponse.json({ message: 'Product quantity updated in cart.' }, {status: 200});
       } else {
           const insertQuery = 'INSERT INTO AddsToCart (Cust_id, P_id, Quantity) VALUES ($1, $2, 1)';
@@ -39,9 +43,9 @@ export async function POST(req, res){
           const updateProductQuery = 'UPDATE Product SET Quantity = Quantity - 1 WHERE P_id = $1';
           await client.query(updateProductQuery, [product_id]);
 
+          client.release();
           return NextResponse.json({ message: 'Product added to cart.' }, {status: 201});
       }
-      client.release();
   } catch (error) {
       console.error(error);
       return NextResponse.json({ message: 'Internal server error' }, {status: 500});
@@ -53,9 +57,10 @@ export async function GET(req, res){
         const client = await pool.connect();
   
         // Fetch the Cust_id from the last row of the Login table
-        const custIdQuery = 'SELECT Cust_id FROM Login ORDER BY Login_id DESC LIMIT 1';
-        const custIdResult = await client.query(custIdQuery);
-        const custId = custIdResult.rows[0].cust_id;
+        // const custIdQuery = 'SELECT Cust_id FROM Login ORDER BY Login_id DESC LIMIT 1';
+        // const custIdResult = await client.query(custIdQuery);
+        // const custId = custIdResult.rows[0].cust_id;
+        const custId = await getToken(); 
   
         // Use the fetched Cust_id in the query
         const query = `SELECT 
@@ -78,8 +83,8 @@ export async function GET(req, res){
           image1: row.image1,
           price: row.price
         }));
-        return NextResponse.json(cartItems, {status:200});
         client.release();
+        return NextResponse.json(cartItems, {status:200});
       } catch (error) {
         console.error(error);
         return NextResponse.json({ message: 'Internal server error' }, {status:500});
