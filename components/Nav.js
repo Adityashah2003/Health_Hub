@@ -241,7 +241,7 @@ const Nav = () => {
     fetchData();
   }, [router]);
 
-  console.log(session);
+  // console.log(session);
   
 
   const handleLogout = async()=>{
@@ -263,9 +263,9 @@ const Nav = () => {
             <p className="text-xl font-bold">Health Hub</p>
           </Link>
           <div className="flex items-center gap-5">
-            <Link href="/user" className="hover:text-gray-300 border px-3 py-1 rounded-full">
-              <p>User Profile</p>
-            </Link>
+            {session && <Link href="/user" className="hover:text-gray-300 border px-3 py-1 rounded-full">
+              <p>{session.username}</p>
+            </Link>}
             {session===null ? 
               (
                 <>
